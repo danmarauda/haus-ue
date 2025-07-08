@@ -174,31 +174,7 @@ export function VoiceCopilotProvider({ children }: { children: React.ReactNode }
       })
 
       if (!response.ok) {
-        let errorText = `Server responded with status ${response.status}`
-        try {
-          const text = await response.text() // Read the raw response text first
-          try {
-            // Try to parse as JSON
-            const errorPayload = JSON.parse(text)
-            if (errorPayload && (errorPayload.message || errorPayload.error)) {
-              errorText = errorPayload.message || errorPayload.error
-            } else if (text) {
-              // If not structured JSON error, but text exists, use truncated text
-              errorText = text.substring(0, 200) + (text.length > 200 ? "..." : "")
-            }
-          } catch (jsonError) {
-            // Not JSON, use the raw text if available and not too long
-            if (text) {
-              errorText = text.substring(0, 200) + (text.length > 200 ? "..." : "")
-            }
-          }
-        } catch (e) {
-          // Failed to get response body, stick to status code and status text
-          errorText = `Server responded with status ${response.status} ${response.statusText || ""}`
-        }
-        // Construct a more informative error message
-        const detailedErrorMessage = `API Error (${response.status}): ${errorText}`
-        throw new Error(detailedErrorMessage)
+        throw new Error(`Error: ${response.status}`)
       }
 
       if (!response.body) {
@@ -256,23 +232,13 @@ export function VoiceCopilotProvider({ children }: { children: React.ReactNode }
         setVoiceState("idle")
       }, 3000)
     } catch (error) {
-      console.error("Error processing command:", error) // Log the full error object
+      console.error("Error processing command", error)
       setVoiceState("error")
-
-      let displayErrorMessage = "I'm sorry, I couldn't process your request. Please try again."
-      let toastDescription = "There was an error processing your request. Please try again."
-
-      if (error instanceof Error) {
-        // Use the (potentially more detailed) message from the Error object
-        displayErrorMessage = `I'm sorry, an error occurred: ${error.message}`
-        toastDescription = error.message
-      }
-
-      setResponse(displayErrorMessage)
+      setResponse("I'm sorry, I couldn't process your request. Please try again.")
       setIsStreaming(false)
       toast({
         title: "Processing Error",
-        description: toastDescription,
+        description: "There was an error processing your request. Please try again.",
         variant: "destructive",
       })
     }

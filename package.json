@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@ai-sdk/groq": "latest",
-    "@clerk/clerk-react": "latest",
     "@emotion/is-prop-valid": "latest",
     "@hookform/resolvers": "^3.9.1",
     "@radix-ui/react-accordion": "latest",
@@ -42,7 +41,6 @@
     "@radix-ui/react-tooltip": "1.1.6",
     "@react-three/drei": "latest",
     "@react-three/fiber": "latest",
-    "@supabase/supabase-js": "latest",
     "ai": "latest",
     "autoprefixer": "^10.4.20",
     "class-variance-authority": "^0.7.1",

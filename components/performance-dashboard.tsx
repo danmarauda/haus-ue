@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react" // Added useCallback
+import { useState, useEffect } from "react"
 import { getMetrics, getPerformanceSummary, clearMetrics, togglePerformanceMonitoring } from "@/lib/performance"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -12,25 +12,34 @@ import { Download, RefreshCw, AlertTriangle } from "lucide-react"
 export function PerformanceDashboard() {
   const [metrics, setMetrics] = useState<any[]>([])
   const [summary, setSummary] = useState<any>({})
-  const [isMonitoring, setIsMonitoring] = useState(true) // Initialize directly
+  const [isMonitoring, setIsMonitoring] = useState(true)
   const [activeTab, setActiveTab] = useState("summary")
-  // const [refreshInterval, setRefreshInterval] = useState<number | null>(null) // Removed
+  const [refreshInterval, setRefreshInterval] = useState<number | null>(null)
+  const [showWarnings, setShowWarnings] = useState(false)
 
   // Performance thresholds (in ms)
   const SLOW_THRESHOLD = 100
   const WARNING_THRESHOLD = 50
 
-  // Refresh metrics - made stable with useCallback
-  const refreshMetrics = useCallback(() => {
+  // Refresh metrics
+  const refreshMetrics = () => {
     setMetrics(getMetrics())
     setSummary(getPerformanceSummary())
-  }, []) // Assuming getMetrics/getPerformanceSummary are stable or have no relevant dependencies
+  }
 
-  // Toggle monitoring - simplified and made stable
-  const handleToggleMonitoring = useCallback((enabled: boolean) => {
+  // Toggle monitoring
+  const handleToggleMonitoring = (enabled: boolean) => {
     setIsMonitoring(enabled)
-    togglePerformanceMonitoring(enabled) // Assuming this is a stable import
-  }, []) // setIsMonitoring is stable, togglePerformanceMonitoring is stable
+    togglePerformanceMonitoring(enabled)
+
+    if (enabled && !refreshInterval) {
+      const interval = window.setInterval(refreshMetrics, 2000)
+      setRefreshInterval(interval)
+    } else if (!enabled && refreshInterval) {
+      window.clearInterval(refreshInterval)
+      setRefreshInterval(null)
+    }
+  }
 
   // Clear metrics
   const handleClearMetrics = () => {
@@ -53,23 +62,18 @@ export function PerformanceDashboard() {
     URL.revokeObjectURL(url)
   }
 
-  // Effect to manage the interval based on isMonitoring state
+  // Initialize monitoring
   useEffect(() => {
-    if (!isMonitoring) {
-      return // Do nothing if monitoring is off
-    }
+    handleToggleMonitoring(true)
 
-    // Monitoring is on, set up the interval
-    refreshMetrics() // Call once immediately when monitoring starts/resumes
-    const intervalId = window.setInterval(refreshMetrics, 2000)
-
-    // Cleanup function to clear the interval
     return () => {
-      window.clearInterval(intervalId)
+      if (refreshInterval) {
+        window.clearInterval(refreshInterval)
+      }
     }
-  }, [isMonitoring, refreshMetrics]) // Dependencies: re-run if isMonitoring or refreshMetrics changes
+  }, [])
 
-  // Prepare chart data (remains the same)
+  // Prepare chart data
   const chartData = Object.entries(summary).map(([name, data]: [string, any]) => ({
     name: name.length > 15 ? name.substring(0, 15) + "..." : name,
     fullName: name,
@@ -78,7 +82,7 @@ export function PerformanceDashboard() {
     count: data.count,
   }))
 
-  // Filter slow operations (remains the same)
+  // Filter slow operations
   const slowOperations = Object.entries(summary)
     .filter(([_, data]: [string, any]) => data.avgDuration > WARNING_THRESHOLD)
     .sort((a, b) => (b[1] as any).avgDuration - (a[1] as any).avgDuration)

@@ -1,4 +1,6 @@
 /** @type {import('tailwindcss').Config} */
+// Removed the 'plugin' import as we are moving utilities to globals.css
+
 module.exports = {
   darkMode: ["class"],
   content: [
@@ -7,7 +9,6 @@ module.exports = {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
     "*.{js,ts,jsx,tsx,mdx}",
-    "./index.html", // Added from updates
   ],
   theme: {
     container: {
@@ -66,13 +67,6 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        "vercel-bg": "#000000", // Added from updates
-        "vercel-card-bg": "#111111", // Added from updates
-        "vercel-text-primary": "#FFFFFF", // Added from updates
-        "vercel-text-secondary": "#999999", // Lighter than #888 for better contrast on black, Added from updates
-        "vercel-border": "#333333", // Added from updates
-        "vercel-accent": "#FFFFFF", // Using white as accent for buttons/links for Vercel's minimal dark style, Added from updates
-        "vercel-accent-hover": "#EAEAEA", // Added from updates
       },
       borderRadius: {
         lg: "0px",
@@ -95,7 +89,7 @@ module.exports = {
         "pulse-glow": "pulse-glow 3s infinite ease-in-out",
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"], // Updated from updates
+        sans: ["var(--font-geist-sans)", "system-ui", "sans-serif"],
         mono: ["var(--font-geist-mono)", "monospace"],
       },
       letterSpacing: {

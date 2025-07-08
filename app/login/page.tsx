@@ -1,12 +1,11 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
-import { Eye, EyeOff, Mail, Lock } from "lucide-react"
+import { Eye, EyeOff, Mail, Lock, Zap } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -21,7 +20,7 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
 
   const router = useRouter()
-  const { login } = useAuth()
+  const { login, devLogin } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -37,6 +36,22 @@ export default function LoginPage() {
       setIsLoading(false)
     }
   }
+
+  const handleDevBypassLogin = async () => {
+    setError(null)
+    setIsLoading(true)
+    try {
+      await devLogin()
+      router.push("/dashboard")
+    } catch (err) {
+      setError("Dev bypass login failed.")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Check if we're in development mode
+  const isDevelopment = process.env.NODE_ENV === "development"
 
   return (
     <div className="flex min-h-[calc(100vh-73px)] flex-col items-center justify-center px-4 py-12">
@@ -127,6 +142,22 @@ export default function LoginPage() {
               {isLoading ? "LOGGING IN..." : "LOG IN"}
             </Button>
           </form>
+
+          {/* Dev Bypass Button - Only in development */}
+          {isDevelopment && (
+            <div className="mt-6 border-t border-minimal-border pt-6">
+              <Button
+                variant="outline"
+                className="w-full rounded-none border-yellow-500 text-yellow-500 hover:bg-yellow-500/10 hover:text-yellow-400 uppercase tracking-wider bg-transparent"
+                onClick={handleDevBypassLogin}
+                disabled={isLoading}
+              >
+                <Zap className="mr-2 h-4 w-4" />
+                {isLoading ? "BYPASSING..." : "Dev Bypass Login"}
+              </Button>
+              <p className="mt-2 text-center text-xs text-minimal-text-secondary">(Development Mode Only)</p>
+            </div>
+          )}
 
           <div className="mt-6 text-center text-sm">
             <p className="text-minimal-text-secondary">
